@@ -9,13 +9,13 @@
 #include <RS485_protocol.h>
 
 #define RW_TIMEOUT 1000
-#define PAUSE 3
+#define PAUSE 2
 
 int nrf_write(const unsigned char what) {
 	unsigned char b = what;
 	int result = nrf24l01_write(&b, 1);
 	if (result != 1)
-		debugPrint("FAIL\r\n", what);
+		debugPrint("nrf_write %x FAIL\r\n", what);
 	return result;
 }
 int nrf_available() {
@@ -33,7 +33,7 @@ int nrf_read() {
 }
 
 int owrf_read(unsigned char * buffer) {
-	unsigned char length = 0;
+	unsigned char length = -1;
 	if (recvMsg(nrf_available, nrf_read, &length, 1, RW_TIMEOUT) == 1) {
 		_delay_ms(PAUSE);
 		sendMsg(nrf_write, &length, 1);
@@ -44,7 +44,7 @@ int owrf_read(unsigned char * buffer) {
 				length,              // maximum buffer size
 				RW_TIMEOUT);
 	}
-	return 0;
+	return -1;
 }
 
 int owrf_write(unsigned char * buffer, int length) {

@@ -50,8 +50,8 @@
 #define FALSE 0
 #define int int
 
-#define STX '\2'
-#define ETX '\3'
+#define STX 0x02
+#define ETX 0x03
 
 // calculate 8-bit CRC
 static unsigned char crc8 (const unsigned char *addr, unsigned char len)
@@ -103,14 +103,21 @@ int sendMsg (WriteCallback fSend, const unsigned char * data, const unsigned cha
 	  debugPrint("send STX FAIL\r\n");
 	  return 0;
   }
+  debugPrint("STX-");
   for (unsigned char i = 0; i < length; i++)
     if (sendComplemented (fSend, data [i]) != 1)
     	return 0;
+  debugPrint("DATA-");
   if (fSend (ETX) != 1) {  // sendETX
 	  debugPrint("send ETX FAIL\r\n");
 	  return 0;
   }
-  return sendComplemented (fSend, crc8 (data, length));
+  debugPrint("ETX-");
+  int result = sendComplemented (fSend, crc8 (data, length));
+  if (result == 1)
+	  debugPrint("CRC");
+  debugPrint("\r\n");
+  return result;
 }  // end of sendMsg
 
 // receive a message, maximum "length" bytes, timeout after "timeout" milliseconds
